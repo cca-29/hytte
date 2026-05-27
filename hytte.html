@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Hytte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Spa palette — warm stone, linen, smoked oak, sage */
+    --bg: #f4f0e8;            /* unbleached linen */
+    --bg-card: #faf6ee;       /* paler linen, lifted */
+    --bg-soft: #ece6d8;       /* warm sand */
+    --bg-deep: #e2dccc;       /* deeper sand for hover/active */
+    --bg-info: #dde2d4;       /* pale sage tint */
+    --text: #2a2620;          /* smoked oak, not black */
+    --text-soft: #6b6356;     /* taupe */
+    --text-faint: #9a9183;    /* faint taupe */
+    --text-info: #4a5640;     /* deep sage for info panel text */
+    --accent: #7a8a6a;        /* muted sage */
+    --accent-soft: #b8c2a8;   /* lifted sage */
+    --line: rgba(42, 38, 32, 0.08);
+    --line-soft: rgba(42, 38, 32, 0.04);
+    --shadow-sm: 0 1px 2px rgba(42, 38, 32, 0.04), 0 2px 6px rgba(42, 38, 32, 0.03);
+    --shadow-md: 0 2px 4px rgba(42, 38, 32, 0.04), 0 8px 24px rgba(42, 38, 32, 0.05);
+    --shadow-lg: 0 4px 8px rgba(42, 38, 32, 0.04), 0 16px 40px rgba(42, 38, 32, 0.06);
+    --radius: 4px;
+    --radius-lg: 10px;
+    --radius-xl: 18px;
+    --font-display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+    --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --ease: cubic-bezier(0.32, 0.08, 0.24, 1);
+    --dur: 480ms;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1f1d18;
+      --bg-card: #26231d;
+      --bg-soft: #2d2a22;
+      --bg-deep: #36322a;
+      --bg-info: #2a3025;
+      --text: #ece6d8;
+      --text-soft: #a8a08f;
+      --text-faint: #6b6356;
+      --text-info: #b8c2a8;
+      --accent: #9aaa86;
+      --accent-soft: #5e6a52;
+      --line: rgba(236, 230, 216, 0.10);
+      --line-soft: rgba(236, 230, 216, 0.05);
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.20), 0 2px 6px rgba(0,0,0,0.15);
+      --shadow-md: 0 2px 4px rgba(0,0,0,0.20), 0 8px 24px rgba(0,0,0,0.25);
+      --shadow-lg: 0 4px 8px rgba(0,0,0,0.20), 0 16px 40px rgba(0,0,0,0.30);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+  /* Subtle grain so the page doesn't read as flat digital paper */
+  body {
+    margin: 0;
+    padding: 3rem 1.25rem 4rem;
+    font-family: var(--font-body);
+    font-weight: 400;
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, color-mix(in srgb, var(--accent-soft) 18%, transparent), transparent 70%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.16  0 0 0 0 0.15  0 0 0 0 0.13  0 0 0 0.035 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    background-attachment: fixed, fixed;
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.65;
+    min-height: 100vh;
+    letter-spacing: 0.005em;
+  }
+  .container { max-width: 720px; margin: 0 auto; }
+
+  /* Display type */
+  h1, h2, h3, .display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.005em;
+  }
+
+  /* Page-load reveal */
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .gate, .app-inner { animation: rise var(--dur) var(--ease) both; }
+  .app-inner > * { animation: rise var(--dur) var(--ease) both; }
+  .app-inner > *:nth-child(1) { animation-delay: 60ms; }
+  .app-inner > *:nth-child(2) { animation-delay: 140ms; }
+  .app-inner > *:nth-child(3) { animation-delay: 220ms; }
+
+  /* Password gate */
+  .gate {
+    max-width: 380px;
+    margin: 5rem auto;
+    padding: 2.5rem 2.25rem;
+    background: var(--bg-card);
+    border: 0;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+  }
+  .gate-mark {
+    width: 32px; height: 32px;
+    margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--accent) 60%, white), var(--accent) 70%);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  .gate h1 { font-size: 32px; font-weight: 400; margin: 0 0 1.75rem; font-style: italic; }
+  .gate p { font-size: 13px; color: var(--text-soft); margin: 0 0 1.75rem; letter-spacing: 0.04em; }
+  .gate input {
+    width: 100%; padding: 12px 14px;
+    font-size: 14px; font-family: inherit;
+    background: transparent; color: var(--text);
+    border: 0; border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    margin-bottom: 1.25rem;
+    text-align: center;
+    letter-spacing: 0.1em;
+    transition: border-color var(--dur) var(--ease);
+  }
+  .gate input::placeholder { letter-spacing: 0.05em; color: var(--text-faint); }
+  .gate input:focus { outline: none; border-bottom-color: var(--accent); }
+  .gate button {
+    width: 100%; padding: 12px;
+    font-size: 11px; font-family: inherit; font-weight: 500;
+    background: var(--accent); color: var(--bg-card);
+    border: 0; border-radius: 100px; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    transition: background var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .gate button:hover { background: color-mix(in srgb, var(--accent) 88%, black); transform: translateY(-1px); }
+  .gate-error { color: #8a5a4a; font-size: 12px; margin-top: 10px; min-height: 18px; font-style: italic; }
+
+  /* Header */
+  .header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 2rem; padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .header h1 {
+    font-size: 36px; margin: 0; font-style: italic; line-height: 1;
+  }
+  .header p {
+    font-size: 12px; color: var(--text-soft); margin: 8px 0 0;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .lock-btn {
+    background: transparent; border: 1px solid var(--line); color: var(--text-soft);
+    padding: 8px 16px; border-radius: 100px; cursor: pointer;
+    font-size: 10px; font-family: inherit; letter-spacing: 0.18em;
+    text-transform: uppercase;
+    transition: all var(--dur) var(--ease);
+  }
+  .lock-btn:hover { background: var(--bg-card); color: var(--text); border-color: var(--text-soft); }
+
+  /* Tabs — flowing, slow, no harsh borders */
+  .tabs {
+    display: flex; gap: 0; margin-bottom: 2rem;
+    flex-wrap: wrap; padding: 0;
+  }
+  .tab {
+    background: transparent; border: 0;
+    padding: 10px 16px 12px 0;
+    margin-right: 20px;
+    font-size: 13px;
+    color: var(--text-faint); cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 400;
+    position: relative;
+    transition: color var(--dur) var(--ease);
+    letter-spacing: 0.02em;
+  }
+  .tab::after {
+    content: ''; position: absolute;
+    left: 0; bottom: 0;
+    width: calc(100% - 20px); height: 1px;
+    background: var(--accent);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform var(--dur) var(--ease);
+  }
+  .tab.active { color: var(--text); }
+  .tab.active::after { transform: scaleX(1); }
+  .tab:hover { color: var(--text-soft); }
+  .tab:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; border-radius: 2px; }
+
+  .panel { display: none; animation: rise var(--dur) var(--ease) both; }
+  .panel.active { display: block; }
+
+  /* Cards — floating, soft, no harsh borders */
+  .card {
+    background: var(--bg-card); border: 0;
+    border-radius: var(--radius-xl);
+    padding: 1.75rem 1.75rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--dur) var(--ease);
+  }
+  .card:hover { box-shadow: var(--shadow-md); }
+  .card h2 {
+    font-size: 22px; font-weight: 400; margin: 0 0 1rem;
+    font-style: italic;
+    color: var(--text);
+  }
+
+  /* Metrics — tall, quiet, three columns of breath */
+  .metrics {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    margin-bottom: 1.25rem;
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .metric {
+    background: var(--bg-card);
+    padding: 1.5rem 1.5rem;
+    position: relative;
+  }
+  .metric + .metric::before {
+    content: ''; position: absolute;
+    left: 0; top: 1.5rem; bottom: 1.5rem; width: 1px;
+    background: var(--line-soft);
+  }
+  .metric-label {
+    font-size: 10px; color: var(--text-faint); margin: 0 0 8px;
+    text-transform: uppercase; letter-spacing: 0.16em;
+  }
+  .metric-value {
+    font-family: var(--font-display); font-size: 28px; font-weight: 400; margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .metric-sub { font-size: 11px; color: var(--text-faint); margin: 4px 0 0; font-style: italic; }
+
+  /* Date strip */
+  .date-strip {
+    font-family: var(--font-display); font-style: italic;
+    font-size: 16px; color: var(--text-soft); margin: 0 0 1.25rem;
+    text-align: center;
+  }
+
+  /* Habits */
+  .habit {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 0; border-bottom: 1px solid var(--line-soft);
+    font-size: 14px;
+    transition: opacity var(--dur) var(--ease);
+  }
+  .habit:last-of-type { border-bottom: 0; }
+  .habit input[type=checkbox] {
+    appearance: none;
+    width: 20px; height: 20px; cursor: pointer; margin: 0;
+    border: 1px solid var(--text-faint);
+    border-radius: 50%;
+    background: transparent;
+    flex-shrink: 0;
+    transition: all var(--dur) var(--ease);
+    position: relative;
+  }
+  .habit input[type=checkbox]:hover { border-color: var(--accent); }
+  .habit input[type=checkbox]:checked {
+    background: var(--accent); border-color: var(--accent);
+  }
+  .habit input[type=checkbox]:checked::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at center, var(--bg-card) 18%, transparent 22%);
+  }
+  .habit label { flex: 1; cursor: pointer; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .habit.done .habit-text { color: var(--text-faint); text-decoration: line-through; text-decoration-color: var(--text-faint); }
+  .habit-text {
+    cursor: text; padding: 2px 4px; margin: -2px -4px; border-radius: 4px;
+    transition: background var(--dur) var(--ease);
+  }
+  .habit-text:hover { background: var(--bg-soft); }
+  .habit-edit {
+    flex: 1; min-width: 200px;
+    padding: 4px 6px; margin: -4px -6px;
+    font-family: inherit; font-size: 14px;
+    background: var(--bg-soft); color: var(--text);
+    border: 0; border-radius: 4px;
+    outline: 1px solid var(--accent);
+  }
+  .habit-streak {
+    font-size: 10px; color: var(--text-soft);
+    letter-spacing: 0.12em; text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+  .habit-remove {
+    background: transparent; border: 0; color: var(--text-faint); cursor: pointer;
+    padding: 4px 8px; border-radius: 50%; font-size: 16px; line-height: 1;
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all var(--dur) var(--ease);
+  }
+  .habit-remove:hover { background: var(--bg-soft); color: var(--text); }
+  .area-pill {
+    display: inline-block; font-size: 9px; padding: 3px 10px;
+    border-radius: 100px; background: transparent;
+    color: var(--text-soft);
+    border: 1px solid var(--line); font-family: inherit; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    transition: all var(--dur) var(--ease);
+  }
+  .area-pill:hover { background: var(--bg-info); color: var(--text-info); border-color: transparent; }
+
+  /* Milestones */
+  .milestone {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 0; font-size: 14px; cursor: pointer;
+    border-bottom: 1px solid var(--line-soft);
+    transition: opacity var(--dur) var(--ease);
+  }
+  .milestone:last-of-type { border-bottom: 0; }
+  .milestone-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 1px solid var(--text-faint); flex-shrink: 0;
+    transition: all var(--dur) var(--ease);
+  }
+  .milestone:hover .milestone-dot { border-color: var(--accent); }
+  .milestone.done .milestone-dot { background: var(--accent); border-color: var(--accent); }
+  .milestone.done .milestone-text { color: var(--text-faint); text-decoration: line-through; text-decoration-color: var(--text-faint); }
+  .milestone-text {
+    flex: 1; padding: 2px 4px; margin: -2px -4px; border-radius: 4px;
+    transition: background var(--dur) var(--ease);
+  }
+  .milestone-text:hover { background: var(--bg-soft); }
+  .milestone-edit {
+    flex: 1; min-width: 200px;
+    padding: 4px 6px; margin: -4px -6px;
+    font-family: inherit; font-size: 14px;
+    background: var(--bg-soft); color: var(--text);
+    border: 0; border-radius: 4px;
+    outline: 1px solid var(--accent);
+  }
+  .milestone-remove {
+    background: transparent; border: 0; color: var(--text-faint); cursor: pointer;
+    padding: 4px 8px; border-radius: 50%; font-size: 16px; line-height: 1;
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all var(--dur) var(--ease);
+  }
+  .milestone-remove:hover { background: var(--bg-soft); color: var(--text); }
+  .progress {
+    height: 2px; background: var(--bg-soft); border-radius: 100px;
+    overflow: hidden; margin: 1rem 0 6px;
+  }
+  .progress-bar {
+    height: 100%; background: var(--accent);
+    transition: width 600ms var(--ease);
+  }
+  .progress-label {
+    font-size: 10px; color: var(--text-faint); margin: 0;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Add row */
+  .add-row {
+    display: flex; gap: 8px; margin-top: 1.25rem;
+    padding-top: 1.25rem; border-top: 1px solid var(--line-soft);
+    flex-wrap: wrap;
+  }
+  .add-row input, .add-row select {
+    flex: 1; min-width: 120px;
+    padding: 10px 12px; font-size: 13px; font-family: inherit;
+    background: var(--bg); color: var(--text);
+    border: 0; border-radius: 100px;
+    transition: background var(--dur) var(--ease);
+  }
+  .add-row input::placeholder { color: var(--text-faint); }
+  .add-row input:focus, .add-row select:focus { outline: 1px solid var(--accent); outline-offset: 0; }
+  .add-row button {
+    padding: 10px 22px; font-size: 10px; font-family: inherit; font-weight: 500;
+    background: transparent; color: var(--text);
+    border: 1px solid var(--line); border-radius: 100px;
+    cursor: pointer;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    transition: all var(--dur) var(--ease);
+  }
+  .add-row button:hover { background: var(--text); color: var(--bg-card); border-color: var(--text); }
+
+  /* Mood */
+  .mood-row { display: flex; gap: 8px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .mood-btn {
+    flex: 1; min-width: 70px; padding: 14px 8px;
+    border: 1px solid var(--line); background: transparent;
+    border-radius: var(--radius-lg); cursor: pointer;
+    font-size: 12px; font-family: var(--font-display);
+    font-style: italic;
+    color: var(--text-soft);
+    transition: all var(--dur) var(--ease);
+  }
+  .mood-btn:hover { border-color: var(--text-faint); color: var(--text); }
+  .mood-btn.selected {
+    background: var(--bg-info); border-color: transparent;
+    color: var(--text-info);
+  }
+  .mood-note {
+    width: 100%; min-height: 70px; padding: 14px 16px;
+    border: 0; border-radius: var(--radius-lg);
+    font-family: var(--font-display); font-style: italic;
+    font-size: 15px; resize: vertical;
+    background: var(--bg); color: var(--text);
+    line-height: 1.6;
+  }
+  .mood-note::placeholder { color: var(--text-faint); }
+  .mood-note:focus { outline: 1px solid var(--accent); outline-offset: 0; }
+
+  /* History grid */
+  .history-row { display: flex; flex-direction: column; gap: 1.25rem; }
+  .history-label {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 10px; color: var(--text-faint);
+    text-transform: uppercase; letter-spacing: 0.16em;
+    margin-bottom: 10px;
+  }
+  .history-label span:last-child { font-variant-numeric: tabular-nums; font-style: italic; text-transform: none; letter-spacing: 0.04em; font-family: var(--font-display); font-size: 12px; color: var(--text-soft); }
+  .history-dots { display: grid; grid-template-columns: repeat(14, 1fr); gap: 6px; }
+  .history-dot {
+    aspect-ratio: 1; border-radius: 50%;
+    background: var(--bg-soft); border: 0;
+    transition: all var(--dur) var(--ease);
+  }
+  .history-dot.partial { background: color-mix(in srgb, var(--accent) 35%, var(--bg-soft)); }
+  .history-dot.full { background: var(--accent); }
+  .history-dot.today { box-shadow: 0 0 0 1px var(--bg-card), 0 0 0 2px var(--text-soft); }
+
+  /* Grief tab */
+  .truth {
+    background: var(--bg-info); color: var(--text-info);
+    padding: 2rem 2rem;
+    border-radius: var(--radius-xl);
+    font-family: var(--font-display);
+    font-size: 17px; line-height: 1.6;
+    font-style: italic;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+  .truth::before {
+    content: '"';
+    position: absolute;
+    top: 0; left: 1.25rem;
+    font-size: 64px;
+    color: var(--accent);
+    opacity: 0.3;
+    line-height: 1;
+    font-family: var(--font-display);
+  }
+  .truth strong {
+    display: block; margin-bottom: 12px; font-weight: 400;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em;
+    font-style: normal;
+    color: var(--text-info); opacity: 0.7;
+  }
+
+  .grief-btn {
+    display: block; width: 100%; text-align: left;
+    padding: 16px 20px; margin-bottom: 0;
+    background: transparent; border: 0;
+    border-radius: var(--radius-lg);
+    cursor: pointer; font-size: 14px;
+    font-family: var(--font-display); font-style: italic;
+    color: var(--text);
+    transition: all var(--dur) var(--ease);
+  }
+  .grief-btn:hover { background: var(--bg-info); color: var(--text-info); }
+
+  .grief-row {
+    display: flex; gap: 8px; margin-bottom: 8px; align-items: stretch;
+  }
+  .grief-row:last-of-type { margin-bottom: 0; }
+  .grief-row .grief-btn { flex: 1; background: var(--bg-soft); }
+  .grief-row .grief-btn:hover { background: var(--bg-info); }
+  .grief-open {
+    background: transparent; border: 1px solid var(--line);
+    border-radius: var(--radius-lg); cursor: pointer;
+    padding: 0 16px; font-family: inherit; font-size: 9px;
+    color: var(--text-soft); white-space: nowrap;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    transition: all var(--dur) var(--ease);
+  }
+  .grief-open:hover { background: var(--text); color: var(--bg-card); border-color: var(--text); }
+
+  .crisis {
+    background: var(--bg-card); border: 0;
+    border-radius: var(--radius-xl);
+    padding: 1.75rem;
+    margin-top: 1.25rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .crisis p { margin: 0 0 10px; font-size: 14px; line-height: 1.65; }
+  .crisis p:last-child { margin-bottom: 0; color: var(--text-soft); font-size: 13px; font-style: italic; }
+  .crisis strong { font-weight: 500; }
+
+  /* Data tab */
+  .data-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .data-actions button {
+    padding: 12px 22px; font-size: 10px; font-family: inherit; font-weight: 500;
+    background: transparent; color: var(--text);
+    border: 1px solid var(--line); border-radius: 100px;
+    cursor: pointer; letter-spacing: 0.18em; text-transform: uppercase;
+    transition: all var(--dur) var(--ease);
+  }
+  .data-actions button:hover { background: var(--text); color: var(--bg-card); border-color: var(--text); }
+  .data-actions button.danger { color: #8a5a4a; }
+  .data-actions button.danger:hover { background: #8a5a4a; color: var(--bg-card); border-color: #8a5a4a; }
+
+  .empty {
+    font-size: 13px; color: var(--text-faint);
+    font-family: var(--font-display); font-style: italic;
+    padding: 12px 0;
+  }
+
+  /* Copy feedback toast */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(8px);
+    background: var(--text); color: var(--bg-card);
+    padding: 12px 22px; border-radius: 100px;
+    font-size: 12px; opacity: 0;
+    transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+    pointer-events: none; z-index: 1000;
+    box-shadow: var(--shadow-lg);
+    letter-spacing: 0.04em;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- Password gate -->
+<div id="gate" class="gate">
+  <div class="gate-mark"></div>
+  <h1>Hytte</h1>
+  <input type="password" id="gate-pw" placeholder="password" autocomplete="current-password" />
+  <button id="gate-submit">Enter</button>
+  <div class="gate-error" id="gate-error"></div>
+</div>
+
+<!-- App (hidden until unlocked) -->
+<div id="app" class="container" style="display: none;">
+<div class="app-inner">
+
+  <div class="header">
+    <div>
+      <h1>Hytte</h1>
+      <p>A quiet daily practice</p>
+    </div>
+    <button class="lock-btn" onclick="lock()">Lock</button>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="today">Today</button>
+    <button class="tab" data-tab="money">Money</button>
+    <button class="tab" data-tab="move">Move abroad</button>
+    <button class="tab" data-tab="body">Body</button>
+    <button class="tab" data-tab="self">Self</button>
+    <button class="tab" data-tab="grief">When it pulls</button>
+    <button class="tab" data-tab="data">Data</button>
+  </div>
+
+  <!-- Today -->
+  <div class="panel active" data-panel="today">
+    <p class="date-strip" id="date-strip"></p>
+    <div class="metrics">
+      <div class="metric"><p class="metric-label">Habits today</p><p class="metric-value" id="m-habits">0 / 0</p></div>
+      <div class="metric">
+        <p class="metric-label">Current streak</p>
+        <p class="metric-value" id="m-streak">0 days</p>
+        <p class="metric-sub" id="m-best">—</p>
+      </div>
+      <div class="metric"><p class="metric-label">Mood</p><p class="metric-value" id="m-mood">—</p></div>
+    </div>
+
+    <div class="card">
+      <h2>Daily habits</h2>
+      <div id="habits-list"></div>
+      <div class="add-row">
+        <input type="text" id="new-habit" placeholder="Add a habit (e.g. 30 min walk)" />
+        <select id="new-habit-area">
+          <option value="money">Money</option>
+          <option value="move">Move</option>
+          <option value="body">Body</option>
+          <option value="self">Self</option>
+        </select>
+        <button onclick="addHabit()">Add</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>How are you today</h2>
+      <div class="mood-row" id="mood-row">
+        <button class="mood-btn" data-mood="heavy">Heavy</button>
+        <button class="mood-btn" data-mood="low">Low</button>
+        <button class="mood-btn" data-mood="okay">Okay</button>
+        <button class="mood-btn" data-mood="steady">Steady</button>
+        <button class="mood-btn" data-mood="bright">Bright</button>
+      </div>
+      <textarea class="mood-note" id="mood-note" placeholder="One sentence about today (optional)"></textarea>
+    </div>
+
+    <div class="card">
+      <h2>Last 14 days</h2>
+      <div class="history-row">
+        <div>
+          <div class="history-label"><span>Habits</span><span id="history-habits-label">—</span></div>
+          <div class="history-dots" id="history-habits"></div>
+        </div>
+        <div>
+          <div class="history-label"><span>Mood</span><span id="history-mood-label">—</span></div>
+          <div class="history-dots" id="history-mood"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Area panels -->
+  <div class="panel" data-panel="money">
+    <div class="card">
+      <h2>Money — milestones</h2>
+      <div class="progress"><div class="progress-bar" id="pb-money"></div></div>
+      <p class="progress-label" id="pct-money">0% complete</p>
+      <div id="milestones-money" style="margin-top: 12px;"></div>
+      <div class="add-row">
+        <input type="text" id="new-mile-money" placeholder="Add a milestone" />
+        <button onclick="addMilestone('money')">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" data-panel="move">
+    <div class="card">
+      <h2>Move abroad — milestones</h2>
+      <div class="progress"><div class="progress-bar" id="pb-move"></div></div>
+      <p class="progress-label" id="pct-move">0% complete</p>
+      <div id="milestones-move" style="margin-top: 12px;"></div>
+      <div class="add-row">
+        <input type="text" id="new-mile-move" placeholder="Add a milestone" />
+        <button onclick="addMilestone('move')">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" data-panel="body">
+    <div class="card">
+      <h2>Body — milestones</h2>
+      <div class="progress"><div class="progress-bar" id="pb-body"></div></div>
+      <p class="progress-label" id="pct-body">0% complete</p>
+      <div id="milestones-body" style="margin-top: 12px;"></div>
+      <div class="add-row">
+        <input type="text" id="new-mile-body" placeholder="Add a milestone" />
+        <button onclick="addMilestone('body')">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" data-panel="self">
+    <div class="card">
+      <h2>Self — milestones</h2>
+      <div class="progress"><div class="progress-bar" id="pb-self"></div></div>
+      <p class="progress-label" id="pct-self">0% complete</p>
+      <div id="milestones-self" style="margin-top: 12px;"></div>
+      <div class="add-row">
+        <input type="text" id="new-mile-self" placeholder="Add a milestone" />
+        <button onclick="addMilestone('self')">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grief tab -->
+  <div class="panel" data-panel="grief">
+    <div class="truth">
+      <strong>Things you already know, for when you forget:</strong>
+      He wasn't reaching for you, and your body knew. The anxiety was the signal, not the flaw. You loved someone who couldn't meet it. That isn't a verdict on your worth — it's just what happened. You are not stuck. You are grieving, which is slow and looks like nothing while it works.
+    </div>
+
+    <div class="card">
+      <h2>When the pull is strong</h2>
+      <p style="font-size: 13px; color: var(--text-soft); margin: 0 0 12px;">
+        Pick whichever matches where you are. Each one copies a prompt to your clipboard, or you can open Claude with it pre-filled.
+      </p>
+      <div class="grief-row">
+        <button class="grief-btn" data-prompt="I am pulled back into the loop about my ex. Please do NOT walk through the case with me again. Just sit with me, name what I already know, and help me come back to the present.">I'm in the loop — pull me back gently</button>
+        <button class="grief-open" data-target="claude" title="Open Claude with this prompt">Open</button>
+      </div>
+      <div class="grief-row">
+        <button class="grief-btn" data-prompt="Help me name one tiny thing I can do in the next hour that is not about him and not a project — just something that puts me back in my own afternoon.">One tiny thing for the next hour</button>
+        <button class="grief-open" data-target="claude" title="Open Claude with this prompt">Open</button>
+      </div>
+      <div class="grief-row">
+        <button class="grief-btn" data-prompt="Remind me what I have actually figured out across my conversations about the breakup — the things I keep forgetting on bad days.">Remind me what I already know</button>
+        <button class="grief-open" data-target="claude" title="Open Claude with this prompt">Open</button>
+      </div>
+      <div class="grief-row">
+        <button class="grief-btn" data-prompt="I want to talk about the forward project — the MBA, the move abroad, the body, the self-focus — and not about him at all. Where should I start this week?">Forward, not back</button>
+        <button class="grief-open" data-target="claude" title="Open Claude with this prompt">Open</button>
+      </div>
+      <div class="grief-row">
+        <button class="grief-btn" data-prompt="Today is genuinely hard and I do not want analysis. Just be with me for a few minutes without arguing anything.">No analysis — just be with me</button>
+        <button class="grief-open" data-target="claude" title="Open Claude with this prompt">Open</button>
+      </div>
+    </div>
+
+    <div class="crisis">
+      <p><strong>If it gets heavier:</strong> Samaritans — 116 123, free, any hour, no threshold. You don't have to be in crisis. "Today is hard and I'm alone with my head" is enough.</p>
+      <p>And the harder-but-truer next step: find a therapist this week. Not because anything is wrong with you. Because you've earned a person who knows your story across time.</p>
+    </div>
+  </div>
+
+  <!-- Data tab -->
+  <div class="panel" data-panel="data">
+    <div class="card">
+      <h2>Your data</h2>
+      <p style="font-size: 13px; color: var(--text-soft); margin: 0 0 16px;">
+        Everything is stored locally in this browser. Export regularly if you want a backup. Clearing browser data will erase everything.
+      </p>
+      <div class="data-actions">
+        <button onclick="exportData()">Export (download JSON)</button>
+        <button onclick="document.getElementById('import-file').click()">Import from file</button>
+        <button class="danger" onclick="resetData()">Reset everything</button>
+      </div>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)" />
+    </div>
+
+    <div class="card">
+      <h2>About</h2>
+      <p style="font-size: 13px; color: var(--text-soft); line-height: 1.7; margin: 0;">
+        Password protection here is client-side only — enough for casual privacy but not real security. Anyone with technical access to this device can read your data. Don't put anything here you couldn't live with being seen.
+      </p>
+    </div>
+  </div>
+</div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ============================================================
+// PASSWORD CONFIG
+// To change password: open browser console, paste this function,
+// run it with your new password, and replace PASSWORD_HASH below
+// with the output.
+//
+// async function hashPassword(pw) {
+//   const data = new TextEncoder().encode(pw);
+//   const hash = await crypto.subtle.digest('SHA-256', data);
+//   return Array.from(new Uint8Array(hash))
+//     .map(b => b.toString(16).padStart(2,'0')).join('');
+// }
+// hashPassword('your-new-password').then(console.log);
+// ============================================================
+
+// Default password is "levelup" — CHANGE THIS before deploying
+const PASSWORD_HASH = '0729c280f5cbe69d31d03639b5ae5ba29130dedfdf97822712f00efbed02a870';
+
+async function hashPw(pw) {
+  const data = new TextEncoder().encode(pw);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash))
+    .map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function tryUnlock() {
+  const pw = document.getElementById('gate-pw').value;
+  const err = document.getElementById('gate-error');
+  if (!pw) { err.textContent = 'Enter your password.'; return; }
+  const hash = await hashPw(pw);
+  if (hash === PASSWORD_HASH) {
+    sessionStorage.setItem('lu_unlocked', '1');
+    showApp();
+  } else {
+    err.textContent = 'Wrong password.';
+    document.getElementById('gate-pw').value = '';
+  }
+}
+
+function showApp() {
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  initApp();
+}
+
+function lock() {
+  sessionStorage.removeItem('lu_unlocked');
+  location.reload();
+}
+
+document.getElementById('gate-submit').addEventListener('click', tryUnlock);
+document.getElementById('gate-pw').addEventListener('keypress', e => {
+  if (e.key === 'Enter') tryUnlock();
+});
+
+// Auto-unlock if session already active
+if (sessionStorage.getItem('lu_unlocked') === '1') {
+  showApp();
+} else {
+  document.getElementById('gate-pw').focus();
+}
+
+// ============================================================
+// APP
+// ============================================================
+
+const KEY = 'lu_dashboard_v1';
+
+const defaultState = {
+  habits: [
+    { id: 'h1', text: 'Move my body for 20+ minutes', area: 'body', done: false, lastDone: null, streak: 0 },
+    { id: 'h2', text: 'One concrete action toward the MBA or the move', area: 'move', done: false, lastDone: null, streak: 0 },
+    { id: 'h3', text: 'Reach toward one person', area: 'self', done: false, lastDone: null, streak: 0 },
+    { id: 'h4', text: 'Spend or save with intention', area: 'money', done: false, lastDone: null, streak: 0 }
+  ],
+  milestones: {
+    money: [
+      { id: 'm1', text: 'Research 2 MBA programmes (websites, alumni)', done: false },
+      { id: 'm2', text: 'Look into funding / scholarships / sponsorship', done: false },
+      { id: 'm3', text: 'Draft a one-page career story', done: false }
+    ],
+    move: [
+      { id: 'm4', text: 'List 3 cities I would actually want to live in', done: false },
+      { id: 'm5', text: 'Research visa / work options for top 1', done: false },
+      { id: 'm6', text: 'Cost of living + neighbourhoods', done: false }
+    ],
+    body: [
+      { id: 'm7', text: 'Pick a sustainable movement routine', done: false },
+      { id: 'm8', text: 'Plan meals like someone I like', done: false },
+      { id: 'm9', text: 'Sleep schedule that holds', done: false }
+    ],
+    self: [
+      { id: 'm10', text: 'Find and book a therapist', done: false },
+      { id: 'm11', text: 'Make plans with one new nice person', done: false },
+      { id: 'm12', text: 'Decide if I want to leave this part of town', done: false }
+    ]
+  },
+  mood: { date: null, value: null, note: '' },
+  history: [], // [{ date: 'YYYY-MM-DD', habitsDone: 2, habitsTotal: 4, mood: 'okay'|null, note: '' }]
+  lastResetDate: null,
+  streak: 0,
+  bestStreak: 0,
+  lastFullDay: null
+};
+
+let state;
+
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function yesterdayStr() { return new Date(Date.now() - 86400000).toISOString().slice(0,10); }
+
+function load() {
+  try { state = JSON.parse(localStorage.getItem(KEY)) || JSON.parse(JSON.stringify(defaultState)); }
+  catch(e) { state = JSON.parse(JSON.stringify(defaultState)); }
+  // Migrate older state versions
+  if (!Array.isArray(state.history)) state.history = [];
+  if (typeof state.bestStreak !== 'number') state.bestStreak = state.streak || 0;
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+function dailyReset() {
+  const today = todayStr();
+  if (state.lastResetDate !== today) {
+    // Snapshot the previous day (if any) into history before resetting
+    if (state.lastResetDate) {
+      const prevDate = state.lastResetDate;
+      const habitsDone = state.habits.filter(h => h.done).length;
+      const habitsTotal = state.habits.length;
+      const moodValue = (state.mood.date === prevDate) ? state.mood.value : null;
+      const moodNote = (state.mood.date === prevDate) ? state.mood.note : '';
+      // Avoid duplicate entries for the same date (e.g. multiple opens in one day)
+      const existing = state.history.find(e => e.date === prevDate);
+      const entry = { date: prevDate, habitsDone, habitsTotal, mood: moodValue, note: moodNote };
+      if (existing) Object.assign(existing, entry);
+      else state.history.push(entry);
+      // Keep history bounded so localStorage doesn't grow forever
+      if (state.history.length > 400) state.history = state.history.slice(-400);
+    }
+    state.habits.forEach(h => { h.done = false; });
+    if (state.mood.date !== today) state.mood = { date: today, value: null, note: '' };
+    state.lastResetDate = today;
+    save();
+  }
+}
+
+function render() {
+  // Date strip
+  const dateEl = document.getElementById('date-strip');
+  if (dateEl) {
+    const d = new Date();
+    dateEl.textContent = d.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+  }
+
+  // Habits
+  const list = document.getElementById('habits-list');
+  list.innerHTML = '';
+  if (state.habits.length === 0) {
+    list.innerHTML = '<p class="empty">No habits yet. Add what matters.</p>';
+  } else {
+    state.habits.forEach(h => {
+      const row = document.createElement('div');
+      row.className = 'habit' + (h.done ? ' done' : '');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.id = h.id; cb.checked = !!h.done;
+      cb.addEventListener('change', e => toggleHabit(h.id, e.target.checked));
+      const lbl = document.createElement('label');
+      lbl.htmlFor = h.id;
+      const pill = document.createElement('button');
+      pill.type = 'button'; pill.className = 'area-pill';
+      pill.textContent = areaName(h.area);
+      pill.title = 'Jump to ' + areaName(h.area);
+      pill.addEventListener('click', e => { e.preventDefault(); switchTab(h.area); });
+      const txt = document.createElement('span');
+      txt.className = 'habit-text';
+      txt.textContent = h.text;
+      txt.title = 'Click to edit';
+      txt.addEventListener('click', e => {
+        e.preventDefault(); e.stopPropagation();
+        editHabit(h.id, txt);
+      });
+      lbl.appendChild(pill); lbl.appendChild(txt);
+      const streak = document.createElement('span');
+      streak.className = 'habit-streak';
+      streak.textContent = h.streak > 0 ? h.streak + 'd' : '';
+      const rm = document.createElement('button');
+      rm.className = 'habit-remove'; rm.textContent = '×';
+      rm.title = 'Remove habit';
+      rm.addEventListener('click', () => removeHabit(h.id));
+      row.appendChild(cb); row.appendChild(lbl); row.appendChild(streak); row.appendChild(rm);
+      list.appendChild(row);
+    });
+  }
+
+  // Metrics
+  const done = state.habits.filter(h => h.done).length;
+  document.getElementById('m-habits').textContent = `${done} / ${state.habits.length}`;
+  if (state.streak === 0) {
+    document.getElementById('m-streak').textContent = 'New day';
+  } else {
+    document.getElementById('m-streak').textContent = `${state.streak} day${state.streak === 1 ? '' : 's'}`;
+  }
+  document.getElementById('m-best').textContent = state.bestStreak > 0
+    ? `Best so far: ${state.bestStreak} day${state.bestStreak === 1 ? '' : 's'}`
+    : 'Building from zero';
+  const moodLabel = { heavy: 'Heavy', low: 'Low', okay: 'Okay', steady: 'Steady', bright: 'Bright' };
+  document.getElementById('m-mood').textContent = state.mood.value ? moodLabel[state.mood.value] : '—';
+
+  // Mood
+  document.querySelectorAll('.mood-btn').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.mood === state.mood.value);
+  });
+  document.getElementById('mood-note').value = state.mood.note || '';
+
+  // History
+  renderHistory();
+
+  // Milestones
+  ['money', 'move', 'body', 'self'].forEach(area => {
+    const c = document.getElementById('milestones-' + area);
+    c.innerHTML = '';
+    const items = state.milestones[area] || [];
+    if (items.length === 0) {
+      c.innerHTML = '<p class="empty">No milestones yet — add what would actually move this forward.</p>';
+    } else {
+      items.forEach(m => {
+        const row = document.createElement('div');
+        row.className = 'milestone' + (m.done ? ' done' : '');
+        const dot = document.createElement('div'); dot.className = 'milestone-dot';
+        const txt = document.createElement('span'); txt.className = 'milestone-text'; txt.textContent = m.text;
+        txt.title = 'Click to edit · click dot to toggle';
+        txt.addEventListener('click', e => {
+          e.stopPropagation();
+          editMilestone(area, m.id, txt);
+        });
+        const rm = document.createElement('button');
+        rm.className = 'milestone-remove'; rm.textContent = '×';
+        rm.addEventListener('click', e => { e.stopPropagation(); removeMilestone(area, m.id); });
+        // Only the dot toggles done state — clicking the text edits
+        dot.addEventListener('click', e => { e.stopPropagation(); toggleMilestone(area, m.id); });
+        dot.style.cursor = 'pointer';
+        row.appendChild(dot); row.appendChild(txt); row.appendChild(rm);
+        c.appendChild(row);
+      });
+    }
+    const total = items.length;
+    const completed = items.filter(m => m.done).length;
+    const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
+    document.getElementById('pb-' + area).style.width = pct + '%';
+    document.getElementById('pct-' + area).textContent = `${pct}% complete (${completed}/${total})`;
+  });
+}
+
+function areaName(a) {
+  return { money: 'Money', move: 'Move', body: 'Body', self: 'Self' }[a] || a;
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.dataset.panel === name));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderHistory() {
+  const habitsEl = document.getElementById('history-habits');
+  const moodEl = document.getElementById('history-mood');
+  if (!habitsEl || !moodEl) return;
+  habitsEl.innerHTML = '';
+  moodEl.innerHTML = '';
+
+  // Build a date->entry map from history, then overlay today's live data
+  const map = {};
+  state.history.forEach(e => { map[e.date] = e; });
+  const todayHabitsDone = state.habits.filter(h => h.done).length;
+  const todayHabitsTotal = state.habits.length;
+  const today = todayStr();
+  map[today] = {
+    date: today,
+    habitsDone: todayHabitsDone,
+    habitsTotal: todayHabitsTotal,
+    mood: state.mood.date === today ? state.mood.value : null
+  };
+
+  // Render 14 days ending today, left = oldest, right = today
+  const moodClass = { heavy: 'partial', low: 'partial', okay: 'full', steady: 'full', bright: 'full' };
+  let habitsCompleted = 0;
+  let moodLogged = 0;
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000);
+    const ds = d.toISOString().slice(0, 10);
+    const entry = map[ds];
+
+    // Habit dot
+    const hDot = document.createElement('div');
+    hDot.className = 'history-dot';
+    if (entry && entry.habitsTotal > 0) {
+      const ratio = entry.habitsDone / entry.habitsTotal;
+      if (ratio >= 1) { hDot.classList.add('full'); habitsCompleted++; }
+      else if (ratio > 0) hDot.classList.add('partial');
+    }
+    if (ds === today) hDot.classList.add('today');
+    hDot.title = `${d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}: ${entry ? entry.habitsDone + '/' + entry.habitsTotal : 'no data'}`;
+    habitsEl.appendChild(hDot);
+
+    // Mood dot
+    const mDot = document.createElement('div');
+    mDot.className = 'history-dot';
+    if (entry && entry.mood) {
+      mDot.classList.add(moodClass[entry.mood] || 'partial');
+      moodLogged++;
+    }
+    if (ds === today) mDot.classList.add('today');
+    mDot.title = `${d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}: ${entry && entry.mood ? entry.mood : 'no entry'}`;
+    moodEl.appendChild(mDot);
+  }
+  document.getElementById('history-habits-label').textContent = `${habitsCompleted} full · 14 days`;
+  document.getElementById('history-mood-label').textContent = `${moodLogged} logged · 14 days`;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function toggleHabit(id, done) {
+  const h = state.habits.find(x => x.id === id);
+  if (!h) return;
+  h.done = done;
+  if (done) {
+    const today = todayStr();
+    if (h.lastDone !== today) {
+      h.streak = (h.lastDone === yesterdayStr()) ? h.streak + 1 : 1;
+      h.lastDone = today;
+    }
+  }
+  const allDone = state.habits.length > 0 && state.habits.every(x => x.done);
+  if (allDone && state.lastFullDay !== todayStr()) {
+    state.streak = (state.lastFullDay === yesterdayStr()) ? state.streak + 1 : 1;
+    state.lastFullDay = todayStr();
+    if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+  }
+  save(); render();
+}
+
+function removeHabit(id) {
+  const h = state.habits.find(x => x.id === id);
+  if (h && h.streak >= 3) {
+    if (!confirm(`This habit has a ${h.streak}-day streak. Remove it anyway?`)) return;
+  }
+  state.habits = state.habits.filter(h => h.id !== id);
+  save(); render();
+}
+
+function toggleMilestone(area, id) {
+  const m = state.milestones[area].find(x => x.id === id);
+  if (!m) return;
+  m.done = !m.done;
+  save(); render();
+}
+
+function removeMilestone(area, id) {
+  state.milestones[area] = state.milestones[area].filter(m => m.id !== id);
+  save(); render();
+}
+
+function editHabit(id, spanEl) {
+  const h = state.habits.find(x => x.id === id);
+  if (!h) return;
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = h.text;
+  input.className = 'habit-edit';
+  input.maxLength = 140;
+  spanEl.replaceWith(input);
+  input.focus();
+  input.setSelectionRange(input.value.length, input.value.length);
+  let resolved = false;
+  const commit = () => {
+    if (resolved) return; resolved = true;
+    const v = input.value.trim();
+    if (v) h.text = v;
+    save(); render();
+  };
+  const cancel = () => {
+    if (resolved) return; resolved = true;
+    render();
+  };
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); commit(); }
+    else if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+  });
+  input.addEventListener('blur', commit);
+}
+
+function editMilestone(area, id, spanEl) {
+  const m = state.milestones[area].find(x => x.id === id);
+  if (!m) return;
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = m.text;
+  input.className = 'milestone-edit';
+  input.maxLength = 200;
+  spanEl.replaceWith(input);
+  input.focus();
+  input.setSelectionRange(input.value.length, input.value.length);
+  let resolved = false;
+  const commit = () => {
+    if (resolved) return; resolved = true;
+    const v = input.value.trim();
+    if (v) m.text = v;
+    save(); render();
+  };
+  const cancel = () => {
+    if (resolved) return; resolved = true;
+    render();
+  };
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); commit(); }
+    else if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+  });
+  input.addEventListener('blur', commit);
+}
+
+function addHabit() {
+  const input = document.getElementById('new-habit');
+  const area = document.getElementById('new-habit-area').value;
+  const text = input.value.trim();
+  if (!text) return;
+  state.habits.push({ id: 'h' + Date.now(), text, area, done: false, lastDone: null, streak: 0 });
+  input.value = '';
+  save(); render();
+}
+
+function addMilestone(area) {
+  const input = document.getElementById('new-mile-' + area);
+  const text = input.value.trim();
+  if (!text) return;
+  state.milestones[area].push({ id: 'm' + Date.now(), text, done: false });
+  input.value = '';
+  save(); render();
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `hytte-backup-${todayStr()}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Exported.');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.habits || !data.milestones) throw new Error('Invalid file');
+      state = data;
+      save(); render();
+      toast('Imported.');
+    } catch(err) {
+      toast('Import failed — invalid file.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function resetData() {
+  if (!confirm('This will delete all your data. Are you sure?')) return;
+  if (!confirm('Really sure? This cannot be undone.')) return;
+  localStorage.removeItem(KEY);
+  state = JSON.parse(JSON.stringify(defaultState));
+  save(); render();
+  toast('Reset.');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function initApp() {
+  load();
+  dailyReset();
+
+  // Tabs
+  document.getElementById('tabs').addEventListener('click', e => {
+    if (!e.target.matches('.tab')) return;
+    switchTab(e.target.dataset.tab);
+  });
+
+  // Keyboard shortcuts: Cmd/Ctrl + 1..7
+  const tabOrder = ['today', 'money', 'move', 'body', 'self', 'grief', 'data'];
+  document.addEventListener('keydown', e => {
+    // Skip if typing in an input/textarea
+    if (e.target.matches('input, textarea, select')) return;
+    if ((e.metaKey || e.ctrlKey) && /^[1-7]$/.test(e.key)) {
+      e.preventDefault();
+      switchTab(tabOrder[parseInt(e.key, 10) - 1]);
+    }
+  });
+
+  // Mood
+  document.getElementById('mood-row').addEventListener('click', e => {
+    if (!e.target.matches('.mood-btn')) return;
+    state.mood.value = e.target.dataset.mood;
+    state.mood.date = todayStr();
+    save(); render();
+  });
+  document.getElementById('mood-note').addEventListener('input', e => {
+    state.mood.note = e.target.value;
+    save();
+  });
+
+  // Grief prompt buttons → copy to clipboard
+  document.querySelectorAll('.grief-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const prompt = btn.dataset.prompt;
+      try {
+        await navigator.clipboard.writeText(prompt);
+        toast('Copied — paste into Claude or wherever helps.');
+      } catch(e) {
+        // Fallback for older browsers
+        const ta = document.createElement('textarea');
+        ta.value = prompt; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta);
+        toast('Copied.');
+      }
+    });
+  });
+
+  // Grief "Open" buttons → open Claude with prompt pre-filled (best-effort via query param)
+  document.querySelectorAll('.grief-open').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const row = btn.closest('.grief-row');
+      const promptBtn = row && row.querySelector('.grief-btn');
+      if (!promptBtn) return;
+      const prompt = promptBtn.dataset.prompt;
+      // Copy first as a safety net, then open Claude
+      try { await navigator.clipboard.writeText(prompt); } catch(e) {}
+      const url = 'https://claude.ai/new?q=' + encodeURIComponent(prompt);
+      window.open(url, '_blank', 'noopener');
+    });
+  });
+
+  // Enter key adds inline
+  document.getElementById('new-habit').addEventListener('keypress', e => {
+    if (e.key === 'Enter') addHabit();
+  });
+  ['money', 'move', 'body', 'self'].forEach(a => {
+    const el = document.getElementById('new-mile-' + a);
+    if (el) el.addEventListener('keypress', e => { if (e.key === 'Enter') addMilestone(a); });
+  });
+
+  render();
+}
+
+// Expose for inline handlers
+window.addHabit = addHabit;
+window.addMilestone = addMilestone;
+window.exportData = exportData;
+window.importData = importData;
+window.resetData = resetData;
+window.lock = lock;
+</script>
+</body>
+</html>
