@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>Hytte</title>
+<title>2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
@@ -521,6 +521,64 @@
     padding: 12px 0;
   }
 
+  /* Calendar */
+  .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px; }
+  .cal-title { font-family: var(--font-display); font-style: italic; font-size: 20px; }
+  .cal-nav { display: flex; gap: 8px; }
+  .cal-nav button {
+    background: transparent; border: 1px solid var(--line); color: var(--text-soft);
+    padding: 6px 14px; border-radius: 100px; cursor: pointer;
+    font-size: 10px; font-family: var(--font-body); letter-spacing: 0.14em; text-transform: uppercase;
+    transition: all var(--dur) var(--ease);
+  }
+  .cal-nav button:hover { background: var(--text); color: var(--bg-card); border-color: var(--text); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .cal-dow {
+    font-size: 9px; color: var(--text-faint); text-align: center; padding: 4px 0;
+    text-transform: uppercase; letter-spacing: 0.14em;
+  }
+  .cal-cell {
+    min-height: 64px; border-radius: var(--radius-lg); padding: 6px 7px;
+    background: var(--bg); font-size: 11px; cursor: pointer; overflow: hidden;
+    transition: background var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .cal-cell:hover { background: var(--bg-soft); }
+  .cal-cell.blank { background: transparent; cursor: default; }
+  .cal-cell.today { box-shadow: inset 0 0 0 1px var(--accent); }
+  .cal-cell.fullday { background: var(--bg-info); }
+  .cal-daynum { color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .cal-cell.today .cal-daynum { color: var(--accent); font-weight: 500; }
+  .cal-ev {
+    margin-top: 3px; padding: 1px 6px; border-radius: 100px;
+    background: var(--accent-soft); color: var(--text-info);
+    font-size: 9.5px; line-height: 1.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  @media (max-width: 560px) {
+    .cal-cell { min-height: 42px; padding: 4px 5px; }
+    .cal-ev { display: none; }
+    .cal-cell.has-ev .cal-daynum::after { content: '•'; color: var(--accent); margin-left: 2px; }
+  }
+  .ev-item {
+    display: flex; align-items: baseline; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--line-soft); font-size: 14px;
+  }
+  .ev-item:last-of-type { border-bottom: 0; }
+  .ev-date {
+    font-family: var(--font-display); font-style: italic; font-size: 12px;
+    color: var(--text-soft); white-space: nowrap; min-width: 82px;
+    font-variant-numeric: tabular-nums;
+  }
+  .ev-text { flex: 1; }
+  .ev-remove {
+    background: transparent; border: 0; color: var(--text-faint); cursor: pointer;
+    padding: 4px 8px; border-radius: 50%; font-size: 16px; line-height: 1;
+    width: 24px; height: 24px; align-self: center;
+    display: flex; align-items: center; justify-content: center;
+    transition: all var(--dur) var(--ease);
+  }
+  .ev-remove:hover { background: var(--bg-soft); color: var(--text); }
+  .add-row input[type=date] { border-radius: var(--radius-lg); flex: 0 1 160px; }
+
   /* Copy feedback toast */
   .toast {
     position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(8px);
@@ -540,7 +598,7 @@
 <!-- Password gate -->
 <div id="gate" class="gate">
   <div class="gate-mark"></div>
-  <h1>Hytte</h1>
+  <h1 class="year-mark">2026</h1>
   <input type="password" id="gate-pw" placeholder="password" autocomplete="current-password" />
   <button id="gate-submit">Enter</button>
   <div class="gate-error" id="gate-error"></div>
@@ -552,8 +610,7 @@
 
   <div class="header">
     <div>
-      <h1>Hytte</h1>
-      <p>A quiet daily practice</p>
+      <h1 class="year-mark">2026</h1>
     </div>
     <button class="lock-btn" onclick="lock()">Lock</button>
   </div>
@@ -564,6 +621,7 @@
     <button class="tab" data-tab="move">Move abroad</button>
     <button class="tab" data-tab="body">Body</button>
     <button class="tab" data-tab="self">Self</button>
+    <button class="tab" data-tab="calendar">Calendar</button>
     <button class="tab" data-tab="grief">When it pulls</button>
     <button class="tab" data-tab="data">Data</button>
   </div>
@@ -672,6 +730,34 @@
       <div class="add-row">
         <input type="text" id="new-mile-self" placeholder="Add a milestone" />
         <button onclick="addMilestone('self')">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendar tab -->
+  <div class="panel" data-panel="calendar">
+    <div class="card">
+      <div class="cal-head">
+        <div class="cal-title" id="cal-title">—</div>
+        <div class="cal-nav">
+          <button id="cal-prev" title="Previous month">Prev</button>
+          <button id="cal-today">Today</button>
+          <button id="cal-next" title="Next month">Next</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <p style="font-size: 12px; color: var(--text-faint); margin: 12px 0 0; font-style: italic; font-family: var(--font-display);">
+        Sage days are days every habit was completed. Click a day to add something to it.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Coming up</h2>
+      <div id="events-list"></div>
+      <div class="add-row">
+        <input type="text" id="new-event" placeholder="Add a date that matters (exam, deadline, plan)" maxlength="120" />
+        <input type="date" id="new-event-date" />
+        <button onclick="addEvent()">Add</button>
       </div>
     </div>
   </div>
@@ -799,6 +885,13 @@ document.getElementById('gate-pw').addEventListener('keypress', e => {
   if (e.key === 'Enter') tryUnlock();
 });
 
+// Keep the year mark current
+(function () {
+  const yr = String(new Date().getFullYear());
+  document.title = yr;
+  document.querySelectorAll('.year-mark').forEach(el => el.textContent = yr);
+})();
+
 // Auto-unlock if session already active
 if (sessionStorage.getItem('lu_unlocked') === '1') {
   showApp();
@@ -842,6 +935,7 @@ const defaultState = {
     ]
   },
   mood: { date: null, value: null, note: '' },
+  events: [], // [{ id, date: 'YYYY-MM-DD', text }]
   history: [], // [{ date: 'YYYY-MM-DD', habitsDone: 2, habitsTotal: 4, mood: 'okay'|null, note: '' }]
   lastResetDate: null,
   streak: 0,
@@ -851,14 +945,18 @@ const defaultState = {
 
 let state;
 
-function todayStr() { return new Date().toISOString().slice(0,10); }
-function yesterdayStr() { return new Date(Date.now() - 86400000).toISOString().slice(0,10); }
+function localDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function todayStr() { return localDateStr(new Date()); }
+function yesterdayStr() { const d = new Date(); d.setDate(d.getDate() - 1); return localDateStr(d); }
 
 function load() {
   try { state = JSON.parse(localStorage.getItem(KEY)) || JSON.parse(JSON.stringify(defaultState)); }
   catch(e) { state = JSON.parse(JSON.stringify(defaultState)); }
   // Migrate older state versions
   if (!Array.isArray(state.history)) state.history = [];
+  if (!Array.isArray(state.events)) state.events = [];
   if (typeof state.bestStreak !== 'number') state.bestStreak = state.streak || 0;
 }
 function save() {
@@ -886,6 +984,14 @@ function dailyReset() {
     state.habits.forEach(h => { h.done = false; });
     if (state.mood.date !== today) state.mood = { date: today, value: null, note: '' };
     state.lastResetDate = today;
+  }
+  // A streak that wasn't extended yesterday (or today) is over — show the truth
+  const y = yesterdayStr();
+  if (state.lastFullDay && state.lastFullDay !== today && state.lastFullDay !== y) state.streak = 0;
+  state.habits.forEach(h => {
+    if (h.lastDone && h.lastDone !== today && h.lastDone !== y) h.streak = 0;
+  });
+  {
     save();
   }
 }
@@ -961,6 +1067,9 @@ function render() {
   // History
   renderHistory();
 
+  // Calendar
+  renderCalendar();
+
   // Milestones
   ['money', 'move', 'body', 'self'].forEach(area => {
     const c = document.getElementById('milestones-' + area);
@@ -1032,8 +1141,8 @@ function renderHistory() {
   let habitsCompleted = 0;
   let moodLogged = 0;
   for (let i = 13; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 86400000);
-    const ds = d.toISOString().slice(0, 10);
+    const d = new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate() - i);
+    const ds = localDateStr(d);
     const entry = map[ds];
 
     // Habit dot
@@ -1063,6 +1172,111 @@ function renderHistory() {
   document.getElementById('history-mood-label').textContent = `${moodLogged} logged · 14 days`;
 }
 
+// ----- Calendar -------------------------------------------------------
+let calView = (() => { const n = new Date(); return { y: n.getFullYear(), m: n.getMonth() }; })();
+
+function renderCalendar() {
+  const grid = document.getElementById('cal-grid');
+  if (!grid) return;
+  const now = new Date();
+  const today = todayStr();
+  const { y, m } = calView;
+  document.getElementById('cal-title').textContent =
+    new Date(y, m, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+
+  grid.innerHTML = '';
+  ['Mo','Tu','We','Th','Fr','Sa','Su'].forEach(d => {
+    const el = document.createElement('div'); el.className = 'cal-dow'; el.textContent = d;
+    grid.appendChild(el);
+  });
+  const lead = (new Date(y, m, 1).getDay() + 6) % 7; // Monday-first
+  const days = new Date(y, m + 1, 0).getDate();
+
+  // history map (which days were full-habit days) + today's live state
+  const hist = {};
+  state.history.forEach(e => { hist[e.date] = e; });
+  hist[today] = { habitsDone: state.habits.filter(h => h.done).length, habitsTotal: state.habits.length };
+
+  const evByDay = {};
+  state.events.forEach(ev => {
+    const d = new Date(ev.date + 'T00:00');
+    if (!isNaN(d) && d.getFullYear() === y && d.getMonth() === m)
+      (evByDay[d.getDate()] = evByDay[d.getDate()] || []).push(ev);
+  });
+
+  for (let i = 0; i < lead; i++) {
+    const el = document.createElement('div'); el.className = 'cal-cell blank'; grid.appendChild(el);
+  }
+  for (let d = 1; d <= days; d++) {
+    const ds = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const el = document.createElement('div'); el.className = 'cal-cell';
+    if (ds === today) el.classList.add('today');
+    const h = hist[ds];
+    if (h && h.habitsTotal > 0 && h.habitsDone >= h.habitsTotal) el.classList.add('fullday');
+    const evs = evByDay[d] || [];
+    if (evs.length) el.classList.add('has-ev');
+    const num = document.createElement('div'); num.className = 'cal-daynum'; num.textContent = d;
+    el.appendChild(num);
+    evs.slice(0, 2).forEach(ev => {
+      const pip = document.createElement('div'); pip.className = 'cal-ev'; pip.textContent = ev.text;
+      el.appendChild(pip);
+    });
+    if (evs.length > 2) {
+      const more = document.createElement('div'); more.className = 'cal-ev'; more.textContent = '+' + (evs.length - 2);
+      el.appendChild(more);
+    }
+    el.title = evs.length ? evs.map(e => e.text).join(' · ') : 'Add something to this day';
+    el.addEventListener('click', () => {
+      const dateInput = document.getElementById('new-event-date');
+      if (dateInput) dateInput.value = ds;
+      const txtInput = document.getElementById('new-event');
+      if (txtInput) txtInput.focus();
+    });
+    grid.appendChild(el);
+  }
+
+  // Upcoming list (next 90 days, plus anything undated-in-past kept visible for a week)
+  const listEl = document.getElementById('events-list');
+  if (!listEl) return;
+  listEl.innerHTML = '';
+  const t0 = new Date(); t0.setHours(0, 0, 0, 0);
+  const upcoming = state.events
+    .map(ev => ({ ...ev, d: new Date(ev.date + 'T00:00') }))
+    .filter(ev => !isNaN(ev.d) && (ev.d - t0) >= -7 * 86400000)
+    .sort((a, b) => a.d - b.d)
+    .slice(0, 20);
+  if (!upcoming.length) {
+    listEl.innerHTML = '<p class="empty">Nothing on the horizon yet. Exam dates, deadlines, plans with people — they all belong here.</p>';
+  }
+  upcoming.forEach(ev => {
+    const row = document.createElement('div'); row.className = 'ev-item';
+    const dt = document.createElement('span'); dt.className = 'ev-date';
+    dt.textContent = ev.d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+    const tx = document.createElement('span'); tx.className = 'ev-text'; tx.textContent = ev.text;
+    if (ev.d < t0) tx.style.color = 'var(--text-faint)';
+    const rm = document.createElement('button'); rm.className = 'ev-remove'; rm.textContent = '×';
+    rm.title = 'Remove';
+    rm.addEventListener('click', () => removeEvent(ev.id));
+    row.appendChild(dt); row.appendChild(tx); row.appendChild(rm);
+    listEl.appendChild(row);
+  });
+}
+
+function addEvent() {
+  const txt = document.getElementById('new-event');
+  const date = document.getElementById('new-event-date');
+  const text = txt.value.trim();
+  if (!text || !date.value) { toast(text ? 'Pick a date.' : 'Give it a name.'); return; }
+  state.events.push({ id: 'e' + Date.now(), date: date.value, text });
+  txt.value = '';
+  save(); render();
+}
+
+function removeEvent(id) {
+  state.events = state.events.filter(e => e.id !== id);
+  save(); render();
+}
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -1071,18 +1285,25 @@ function toggleHabit(id, done) {
   const h = state.habits.find(x => x.id === id);
   if (!h) return;
   h.done = done;
+  const today = todayStr();
   if (done) {
-    const today = todayStr();
     if (h.lastDone !== today) {
       h.streak = (h.lastDone === yesterdayStr()) ? h.streak + 1 : 1;
       h.lastDone = today;
     }
+  } else if (h.lastDone === today) {
+    // Un-ticking the same day takes back the credit it just earned
+    h.streak = Math.max(0, h.streak - 1);
+    h.lastDone = h.streak > 0 ? yesterdayStr() : null;
   }
   const allDone = state.habits.length > 0 && state.habits.every(x => x.done);
-  if (allDone && state.lastFullDay !== todayStr()) {
+  if (allDone && state.lastFullDay !== today) {
     state.streak = (state.lastFullDay === yesterdayStr()) ? state.streak + 1 : 1;
-    state.lastFullDay = todayStr();
+    state.lastFullDay = today;
     if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+  } else if (!allDone && state.lastFullDay === today) {
+    state.streak = Math.max(0, state.streak - 1);
+    state.lastFullDay = state.streak > 0 ? yesterdayStr() : null;
   }
   save(); render();
 }
@@ -1190,7 +1411,7 @@ function exportData() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `hytte-backup-${todayStr()}.json`;
+  a.download = `backup-${todayStr()}.json`;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
   toast('Exported.');
@@ -1204,7 +1425,14 @@ function importData(event) {
     try {
       const data = JSON.parse(e.target.result);
       if (!data.habits || !data.milestones) throw new Error('Invalid file');
-      state = data;
+      state = Object.assign(JSON.parse(JSON.stringify(defaultState)), data);
+      ['money','move','body','self'].forEach(a => {
+        if (!Array.isArray(state.milestones[a])) state.milestones[a] = [];
+      });
+      if (!Array.isArray(state.history)) state.history = [];
+      if (!Array.isArray(state.events)) state.events = [];
+      if (!state.mood || typeof state.mood !== 'object') state.mood = { date: null, value: null, note: '' };
+      dailyReset();
       save(); render();
       toast('Imported.');
     } catch(err) {
@@ -1241,15 +1469,29 @@ function initApp() {
     switchTab(e.target.dataset.tab);
   });
 
-  // Keyboard shortcuts: Cmd/Ctrl + 1..7
-  const tabOrder = ['today', 'money', 'move', 'body', 'self', 'grief', 'data'];
+  // Keyboard shortcuts: Cmd/Ctrl + 1..8
+  const tabOrder = ['today', 'money', 'move', 'body', 'self', 'calendar', 'grief', 'data'];
   document.addEventListener('keydown', e => {
     // Skip if typing in an input/textarea
     if (e.target.matches('input, textarea, select')) return;
-    if ((e.metaKey || e.ctrlKey) && /^[1-7]$/.test(e.key)) {
+    if ((e.metaKey || e.ctrlKey) && /^[1-8]$/.test(e.key)) {
       e.preventDefault();
       switchTab(tabOrder[parseInt(e.key, 10) - 1]);
     }
+  });
+
+  // Calendar navigation
+  document.getElementById('cal-prev').addEventListener('click', () => {
+    calView.m--; if (calView.m < 0) { calView.m = 11; calView.y--; } renderCalendar();
+  });
+  document.getElementById('cal-next').addEventListener('click', () => {
+    calView.m++; if (calView.m > 11) { calView.m = 0; calView.y++; } renderCalendar();
+  });
+  document.getElementById('cal-today').addEventListener('click', () => {
+    const n = new Date(); calView = { y: n.getFullYear(), m: n.getMonth() }; renderCalendar();
+  });
+  document.getElementById('new-event').addEventListener('keypress', e => {
+    if (e.key === 'Enter') addEvent();
   });
 
   // Mood
@@ -1311,6 +1553,7 @@ function initApp() {
 // Expose for inline handlers
 window.addHabit = addHabit;
 window.addMilestone = addMilestone;
+window.addEvent = addEvent;
 window.exportData = exportData;
 window.importData = importData;
 window.resetData = resetData;
