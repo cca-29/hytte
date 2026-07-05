@@ -139,6 +139,21 @@
   }
   .gate button:hover { background: color-mix(in srgb, var(--accent) 88%, black); transform: translateY(-1px); }
   .gate-error { color: #8a5a4a; font-size: 12px; margin-top: 10px; min-height: 18px; font-style: italic; }
+  .gate .gate-forgot {
+    width: auto; padding: 6px 4px; margin-top: 4px;
+    background: transparent; color: var(--text-faint);
+    border: 0; border-radius: 0; cursor: pointer;
+    font-size: 11px; font-family: var(--font-display); font-style: italic;
+    text-transform: none; letter-spacing: 0.04em;
+    transition: color var(--dur) var(--ease);
+  }
+  .gate .gate-forgot:hover { color: var(--accent); background: transparent; transform: none; }
+  #gate-reset { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--line-soft); }
+  .gate-reset-note {
+    font-size: 12px; color: var(--text-soft); margin: 0 0 1rem;
+    font-family: var(--font-display); font-style: italic; line-height: 1.55;
+    letter-spacing: 0.01em;
+  }
 
   /* Header */
   .header {
@@ -612,6 +627,13 @@
   <input type="password" id="gate-pw" placeholder="password" autocomplete="current-password" />
   <button id="gate-submit">Enter</button>
   <div class="gate-error" id="gate-error"></div>
+  <button class="gate-forgot" id="gate-forgot" type="button">Forgotten password?</button>
+  <div id="gate-reset" style="display:none">
+    <p class="gate-reset-note">Set a new password for this browser. Your habits, streaks and history are untouched. It only applies on this device — other devices keep the original until you do this there too.</p>
+    <input type="password" id="reset-pw1" placeholder="new password" autocomplete="new-password" />
+    <input type="password" id="reset-pw2" placeholder="repeat it" autocomplete="new-password" />
+    <button id="reset-submit" type="button">Set new password &amp; enter</button>
+  </div>
 </div>
 
 <!-- App (hidden until unlocked) -->
@@ -864,12 +886,18 @@ async function hashPw(pw) {
     .map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
+// A password set via "Forgotten password?" lives here and overrides the
+// baked-in hash — per browser, so a reset never has to touch the deployed file.
+const PW_KEY = 'lu_pw_hash';
+function activeHash() { return localStorage.getItem(PW_KEY) || PASSWORD_HASH; }
+
 async function tryUnlock() {
-  const pw = document.getElementById('gate-pw').value;
+  // trim: mobile keyboards and autofill often append an invisible trailing space
+  const pw = document.getElementById('gate-pw').value.trim();
   const err = document.getElementById('gate-error');
   if (!pw) { err.textContent = 'Enter your password.'; return; }
   const hash = await hashPw(pw);
-  if (hash === PASSWORD_HASH) {
+  if (hash === activeHash()) {
     sessionStorage.setItem('lu_unlocked', '1');
     showApp();
   } else {
@@ -894,19 +922,41 @@ document.getElementById('gate-pw').addEventListener('keypress', e => {
   if (e.key === 'Enter') tryUnlock();
 });
 
+// Forgotten password → set a new one (stored in this browser only, data untouched)
+document.getElementById('gate-forgot').addEventListener('click', () => {
+  const box = document.getElementById('gate-reset');
+  const showing = box.style.display !== 'none';
+  box.style.display = showing ? 'none' : 'block';
+  if (!showing) document.getElementById('reset-pw1').focus();
+});
+
+async function doPasswordReset() {
+  const err = document.getElementById('gate-error');
+  const p1 = document.getElementById('reset-pw1').value.trim();
+  const p2 = document.getElementById('reset-pw2').value.trim();
+  if (p1.length < 4) { err.textContent = 'Use at least 4 characters.'; return; }
+  if (p1 !== p2) { err.textContent = 'Those two don\'t match.'; return; }
+  localStorage.setItem(PW_KEY, await hashPw(p1));
+  err.textContent = '';
+  document.getElementById('reset-pw1').value = '';
+  document.getElementById('reset-pw2').value = '';
+  document.getElementById('gate-reset').style.display = 'none';
+  sessionStorage.setItem('lu_unlocked', '1');
+  showApp();
+}
+document.getElementById('reset-submit').addEventListener('click', doPasswordReset);
+['reset-pw1', 'reset-pw2'].forEach(id => {
+  document.getElementById(id).addEventListener('keypress', e => {
+    if (e.key === 'Enter') doPasswordReset();
+  });
+});
+
 // Keep the year mark current
 (function () {
   const yr = String(new Date().getFullYear());
   document.title = yr;
   document.querySelectorAll('.year-mark').forEach(el => el.textContent = yr);
 })();
-
-// Auto-unlock if session already active
-if (sessionStorage.getItem('lu_unlocked') === '1') {
-  showApp();
-} else {
-  document.getElementById('gate-pw').focus();
-}
 
 // ============================================================
 // APP
@@ -1617,6 +1667,17 @@ window.exportData = exportData;
 window.importData = importData;
 window.resetData = resetData;
 window.lock = lock;
+
+// Auto-unlock if session already active.
+// This MUST run last: showApp() -> initApp() -> load() touches defaultState,
+// which is declared mid-script. Running the check at the top (as before) hit
+// the temporal dead zone on any browser with an active session but empty
+// storage, killing the whole script after visually opening the app.
+if (sessionStorage.getItem('lu_unlocked') === '1') {
+  showApp();
+} else {
+  document.getElementById('gate-pw').focus();
+}
 </script>
 </body>
 </html>
