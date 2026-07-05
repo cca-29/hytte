@@ -462,6 +462,16 @@
     font-style: normal;
     color: var(--text-info); opacity: 0.7;
   }
+  .truth-text { display: block; cursor: text; border-radius: var(--radius); }
+  .truth-text:hover { background: color-mix(in srgb, var(--bg-card) 40%, transparent); }
+  .truth-text.placeholder { opacity: 0.55; }
+  .truth-edit {
+    width: 100%; min-height: 120px; padding: 10px 12px;
+    font: inherit; color: inherit; line-height: inherit;
+    background: color-mix(in srgb, var(--bg-card) 45%, transparent);
+    border: 0; border-radius: var(--radius-lg);
+    outline: 1px solid var(--accent); resize: vertical;
+  }
 
   .grief-btn {
     display: block; width: 100%; text-align: left;
@@ -766,7 +776,7 @@
   <div class="panel" data-panel="grief">
     <div class="truth">
       <strong>Things you already know, for when you forget:</strong>
-      He wasn't reaching for you, and your body knew. The anxiety was the signal, not the flaw. You loved someone who couldn't meet it. That isn't a verdict on your worth — it's just what happened. You are not stuck. You are grieving, which is slow and looks like nothing while it works.
+      <span class="truth-text" id="truth-text" title="Click to edit — stored only in this browser, never in the file"></span>
     </div>
 
     <div class="card">
@@ -775,19 +785,19 @@
         Pick whichever matches where you are. Each one copies a prompt to your clipboard, or you can open Claude with it pre-filled.
       </p>
       <div class="grief-row">
-        <button class="grief-btn" data-prompt="I am pulled back into the loop about my ex. Please do NOT walk through the case with me again. Just sit with me, name what I already know, and help me come back to the present.">I'm in the loop — pull me back gently</button>
+        <button class="grief-btn" data-prompt="I am pulled back into an old loop of painful thoughts. Please do NOT walk through the case with me again. Just sit with me, name what I already know, and help me come back to the present.">I'm in the loop — pull me back gently</button>
         <button class="grief-open" data-target="claude" title="Open Claude with this prompt">Open</button>
       </div>
       <div class="grief-row">
-        <button class="grief-btn" data-prompt="Help me name one tiny thing I can do in the next hour that is not about him and not a project — just something that puts me back in my own afternoon.">One tiny thing for the next hour</button>
+        <button class="grief-btn" data-prompt="Help me name one tiny thing I can do in the next hour that is not about the past and not a project — just something that puts me back in my own afternoon.">One tiny thing for the next hour</button>
         <button class="grief-open" data-target="claude" title="Open Claude with this prompt">Open</button>
       </div>
       <div class="grief-row">
-        <button class="grief-btn" data-prompt="Remind me what I have actually figured out across my conversations about the breakup — the things I keep forgetting on bad days.">Remind me what I already know</button>
+        <button class="grief-btn" data-prompt="Remind me what I have actually figured out across my conversations about this loss — the things I keep forgetting on bad days.">Remind me what I already know</button>
         <button class="grief-open" data-target="claude" title="Open Claude with this prompt">Open</button>
       </div>
       <div class="grief-row">
-        <button class="grief-btn" data-prompt="I want to talk about the forward project — the MBA, the move abroad, the body, the self-focus — and not about him at all. Where should I start this week?">Forward, not back</button>
+        <button class="grief-btn" data-prompt="I want to talk about the forward project — career, place, body, self — and not about the past at all. Where should I start this week?">Forward, not back</button>
         <button class="grief-open" data-target="claude" title="Open Claude with this prompt">Open</button>
       </div>
       <div class="grief-row">
@@ -807,7 +817,7 @@
     <div class="card">
       <h2>Your data</h2>
       <p style="font-size: 13px; color: var(--text-soft); margin: 0 0 16px;">
-        Everything is stored locally in this browser. Export regularly if you want a backup. Clearing browser data will erase everything.
+        Everything — habits, milestones, mood, events, and the words on the "When it pulls" tab — is stored locally in this browser. Export regularly if you want a backup. Clearing browser data will erase everything.
       </p>
       <div class="data-actions">
         <button onclick="exportData()">Export (download JSON)</button>
@@ -908,13 +918,13 @@ const KEY = 'lu_dashboard_v1';
 const defaultState = {
   habits: [
     { id: 'h1', text: 'Move my body for 20+ minutes', area: 'body', done: false, lastDone: null, streak: 0 },
-    { id: 'h2', text: 'One concrete action toward the MBA or the move', area: 'move', done: false, lastDone: null, streak: 0 },
+    { id: 'h2', text: 'One concrete action toward a big goal', area: 'move', done: false, lastDone: null, streak: 0 },
     { id: 'h3', text: 'Reach toward one person', area: 'self', done: false, lastDone: null, streak: 0 },
     { id: 'h4', text: 'Spend or save with intention', area: 'money', done: false, lastDone: null, streak: 0 }
   ],
   milestones: {
     money: [
-      { id: 'm1', text: 'Research 2 MBA programmes (websites, alumni)', done: false },
+      { id: 'm1', text: 'Research 2 options for the next career step', done: false },
       { id: 'm2', text: 'Look into funding / scholarships / sponsorship', done: false },
       { id: 'm3', text: 'Draft a one-page career story', done: false }
     ],
@@ -931,10 +941,11 @@ const defaultState = {
     self: [
       { id: 'm10', text: 'Find and book a therapist', done: false },
       { id: 'm11', text: 'Make plans with one new nice person', done: false },
-      { id: 'm12', text: 'Decide if I want to leave this part of town', done: false }
+      { id: 'm12', text: 'Plan one thing that is purely for me', done: false }
     ]
   },
   mood: { date: null, value: null, note: '' },
+  truth: '', // your own words, stored only in this browser
   events: [], // [{ id, date: 'YYYY-MM-DD', text }]
   history: [], // [{ date: 'YYYY-MM-DD', habitsDone: 2, habitsTotal: 4, mood: 'okay'|null, note: '' }]
   lastResetDate: null,
@@ -957,6 +968,7 @@ function load() {
   // Migrate older state versions
   if (!Array.isArray(state.history)) state.history = [];
   if (!Array.isArray(state.events)) state.events = [];
+  if (typeof state.truth !== 'string') state.truth = '';
   if (typeof state.bestStreak !== 'number') state.bestStreak = state.streak || 0;
 }
 function save() {
@@ -1070,6 +1082,9 @@ function render() {
   // Calendar
   renderCalendar();
 
+  // Truth panel
+  renderTruth();
+
   // Milestones
   ['money', 'move', 'body', 'self'].forEach(area => {
     const c = document.getElementById('milestones-' + area);
@@ -1170,6 +1185,47 @@ function renderHistory() {
   }
   document.getElementById('history-habits-label').textContent = `${habitsCompleted} full · 14 days`;
   document.getElementById('history-mood-label').textContent = `${moodLogged} logged · 14 days`;
+}
+
+// ----- Truth panel (private words, local only) --------------------------
+const TRUTH_PLACEHOLDER = 'Write the things you know are true on good days, so they are here on the hard ones. Click to edit — your words are stored only in this browser, never in the file.';
+
+function renderTruth() {
+  const span = document.getElementById('truth-text');
+  if (!span) return;
+  const has = !!(state.truth && state.truth.trim());
+  span.textContent = has ? state.truth : TRUTH_PLACEHOLDER;
+  span.classList.toggle('placeholder', !has);
+}
+
+function editTruth() {
+  const span = document.getElementById('truth-text');
+  if (!span) return;
+  const ta = document.createElement('textarea');
+  ta.className = 'truth-edit';
+  ta.value = state.truth || '';
+  ta.maxLength = 1500;
+  span.replaceWith(ta);
+  ta.focus();
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+  let resolved = false;
+  const commit = () => {
+    if (resolved) return; resolved = true;
+    state.truth = ta.value.trim();
+    save();
+    ta.replaceWith(span);
+    renderTruth();
+  };
+  const cancel = () => {
+    if (resolved) return; resolved = true;
+    ta.replaceWith(span);
+    renderTruth();
+  };
+  ta.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+    else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); commit(); }
+  });
+  ta.addEventListener('blur', commit);
 }
 
 // ----- Calendar -------------------------------------------------------
@@ -1493,6 +1549,10 @@ function initApp() {
   document.getElementById('new-event').addEventListener('keypress', e => {
     if (e.key === 'Enter') addEvent();
   });
+
+  // Truth panel editing
+  const truthEl = document.getElementById('truth-text');
+  if (truthEl) truthEl.addEventListener('click', editTruth);
 
   // Mood
   document.getElementById('mood-row').addEventListener('click', e => {
